@@ -1,0 +1,2821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Veylo — Focus Beyond Time</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+:root {
+  --accent: #9b7cff;
+  --accent2: #6d4aff;
+  --accent-glow: rgba(155, 124, 255, 0.45);
+  --text: #ffffff;
+  --muted: rgba(255, 255, 255, 0.58);
+  --glass: rgba(10, 10, 16, 0.62);
+  --glass-light: rgba(255, 255, 255, 0.08);
+  --border: rgba(255, 255, 255, 0.12);
+  --font: Inter, sans-serif;
+  --shadow: 0 30px 100px rgba(0, 0, 0, 0.55);
+  --radius: 22px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 100%;
+  min-height: 100%;
+  height: 100%;
+}
+
+body {
+  font-family: var(--font);
+  color: var(--text);
+  background: #05050a;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+button, input, textarea, select { font: inherit; }
+button { cursor: pointer; border: none; color: inherit; background: none; }
+
+/* =========================================================
+   BACKGROUND + LAYERS
+========================================================= */
+
+#background {
+  position: fixed;
+  inset: 0;
+  z-index: -20;
+  background-image: url("https://images.unsplash.com/photo-1519692933481-e162a57d6721?auto=format&fit=crop&w=2400&q=90");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: background-image 0.9s cubic-bezier(0.4, 0, 0.2, 1), filter 0.6s ease;
+  filter: saturate(1.05) contrast(1.05);
+}
+
+#background::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.78) 100%);
+  z-index: 1;
+}
+
+#background::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 40%, transparent 8%, rgba(0,0,0,0.55) 100%);
+  z-index: 2;
+}
+
+#noise {
+  position: fixed;
+  inset: 0;
+  z-index: -15;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* =========================================================
+   RAIN + PARTICLES
+========================================================= */
+
+#rain {
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  pointer-events: none;
+  opacity: 0.42;
+  overflow: hidden;
+}
+
+.rain-drop {
+  position: absolute;
+  width: 1.2px;
+  height: 75px;
+  background: linear-gradient(transparent, rgba(255,255,255,0.55));
+  transform: rotate(14deg);
+  animation: rainFall linear infinite;
+  will-change: transform;
+}
+
+@keyframes rainFall {
+  from { transform: translateY(-130px) rotate(14deg); }
+  to   { transform: translateY(115vh) rotate(14deg); }
+}
+
+#particles {
+  position: fixed;
+  inset: 0;
+  z-index: -8;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(180, 160, 255, 0.35);
+  box-shadow: 0 0 8px rgba(155, 124, 255, 0.4);
+  animation: floatParticle linear infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes floatParticle {
+  0%   { transform: translateY(0) translateX(0) scale(1); opacity: 0; }
+  10%  { opacity: 0.7; }
+  90%  { opacity: 0.4; }
+  100% { transform: translateY(-110vh) translateX(40px) scale(0.6); opacity: 0; }
+}
+
+/* =========================================================
+   LOGIN
+========================================================= */
+
+#loginScreen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 25px;
+  position: relative;
+  z-index: 5;
+}
+
+.login-card {
+  width: min(430px, 100%);
+  padding: 42px;
+  background: rgba(7, 7, 14, 0.78);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border-radius: 30px;
+  box-shadow: var(--shadow), 0 0 0 1px rgba(155,124,255,0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.login-card::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 30% 20%, rgba(155,124,255,0.12), transparent 45%);
+  pointer-events: none;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-weight: 800;
+  font-size: 23px;
+  letter-spacing: -1px;
+  position: relative;
+}
+
+.logo-mark {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  box-shadow: 0 10px 35px rgba(125, 85, 255, 0.4), inset 0 1px 0 rgba(255,255,255,0.25);
+  font-weight: 800;
+  font-size: 18px;
+  position: relative;
+}
+
+.logo-mark::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 15px;
+  background: linear-gradient(135deg, var(--accent), transparent);
+  opacity: 0.35;
+  z-index: -1;
+  filter: blur(6px);
+}
+
+.login-card h1 {
+  margin-top: 34px;
+  font-size: 32px;
+  letter-spacing: -1.4px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.login-sub {
+  color: var(--muted);
+  font-size: 14px;
+  margin-top: 8px;
+  margin-bottom: 28px;
+  line-height: 1.45;
+}
+
+.field { margin-bottom: 15px; }
+
+.field label {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 7px;
+  font-weight: 500;
+}
+
+.field input {
+  width: 100%;
+  padding: 13px 15px;
+  color: white;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.field input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(155, 124, 255, 0.15);
+}
+
+.primary-button {
+  width: 100%;
+  padding: 14px;
+  margin-top: 6px;
+  border-radius: 14px;
+  color: #0b0910;
+  background: white;
+  font-weight: 800;
+  transition: transform 0.2s, box-shadow 0.2s;
+  letter-spacing: -0.2px;
+}
+
+.primary-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 40px rgba(255,255,255,0.18);
+}
+
+.auth-switch {
+  margin-top: 20px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.auth-switch span {
+  color: #c7b9ff;
+  cursor: pointer;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.auth-switch span:hover { color: #e0d6ff; }
+
+.immortal-badge {
+  margin-top: 22px;
+  text-align: center;
+  font-size: 11px;
+  color: rgba(180,160,255,0.55);
+  letter-spacing: 0.4px;
+}
+
+/* =========================================================
+   APPLICATION
+========================================================= */
+
+#app {
+  display: none;
+  min-height: 100vh;
+}
+
+.app { min-height: 100vh; width: 100%; }
+
+/* =========================================================
+   TOPBAR
+========================================================= */
+
+.topbar {
+  position: fixed;
+  top: 16px;
+  left: 22px;
+  right: 22px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 50;
+  pointer-events: none;
+}
+
+.topbar > * { pointer-events: auto; }
+
+.top-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  font-size: 21px;
+  letter-spacing: -0.8px;
+}
+
+.top-logo .logo-mark {
+  width: 38px;
+  height: 38px;
+  font-size: 16px;
+}
+
+.top-actions { display: flex; gap: 7px; }
+
+.icon-button {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  color: rgba(255,255,255,0.7);
+  background: rgba(10,10,17,0.6);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  transition: color 0.2s, background 0.2s, transform 0.2s, box-shadow 0.2s;
+  font-size: 15px;
+}
+
+.icon-button:hover {
+  color: white;
+  background: rgba(255,255,255,0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+}
+
+.icon-button.active-sound {
+  color: var(--accent);
+  box-shadow: 0 0 0 1px rgba(155,124,255,0.3);
+}
+
+/* =========================================================
+   SIDE NAV
+========================================================= */
+
+.sidebar {
+  position: fixed;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 50;
+  width: 58px;
+  padding: 8px;
+  border-radius: 22px;
+  background: rgba(8,8,14,0.68);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+}
+
+.nav-button {
+  width: 42px;
+  height: 42px;
+  margin: 3px 0;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  color: rgba(255,255,255,0.42);
+  background: transparent;
+  transition: color 0.2s, background 0.2s, box-shadow 0.2s;
+  font-size: 16px;
+}
+
+.nav-button:hover {
+  color: white;
+  background: rgba(255,255,255,0.08);
+}
+
+.nav-button.active {
+  color: white;
+  background: linear-gradient(135deg, rgba(155,124,255,0.38), rgba(109,74,255,0.28));
+  box-shadow: inset 0 0 0 1px rgba(180,160,255,0.22);
+}
+
+/* =========================================================
+   MAIN CONTENT
+========================================================= */
+
+.content {
+  width: 100%;
+  min-height: 100vh;
+  padding: 100px 40px 50px 105px;
+}
+
+.page {
+  display: none;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  animation: pageIn 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.page.active { display: block; }
+
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* =========================================================
+   FOCUS PAGE
+========================================================= */
+
+.focus-page {
+  min-height: calc(100vh - 150px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.greeting {
+  color: rgba(255,255,255,0.72);
+  font-size: 15px;
+  margin-bottom: 10px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+
+.big-clock {
+  font-size: clamp(72px, 11vw, 152px);
+  line-height: 0.88;
+  font-weight: 400;
+  letter-spacing: -7px;
+  text-shadow: 0 24px 70px rgba(0,0,0,0.5);
+  font-variant-numeric: tabular-nums;
+}
+
+.big-date {
+  margin-top: 18px;
+  color: var(--muted);
+  font-size: 14px;
+  letter-spacing: 0.3px;
+}
+
+/* =========================================================
+   TIMER
+========================================================= */
+
+.timer-box {
+  width: min(720px, 100%);
+  margin-top: 44px;
+  padding: 26px 28px 28px;
+  border-radius: 28px;
+  background: rgba(7,7,13,0.62);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  box-shadow: var(--shadow), 0 0 0 1px rgba(155,124,255,0.06);
+  position: relative;
+}
+
+.timer-box::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 28px;
+  background: radial-gradient(ellipse at 50% 0%, rgba(155,124,255,0.08), transparent 55%);
+  pointer-events: none;
+}
+
+.timer-types {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.timer-type {
+  padding: 9px 16px;
+  border-radius: 11px;
+  color: var(--muted);
+  background: transparent;
+  font-size: 12.5px;
+  font-weight: 500;
+  transition: color 0.2s, background 0.2s;
+}
+
+.timer-type:hover { color: rgba(255,255,255,0.85); }
+.timer-type.active {
+  color: white;
+  background: rgba(255,255,255,0.1);
+}
+
+.pomo-modes {
+  display: flex;
+  justify-content: center;
+  gap: 7px;
+  margin-bottom: 14px;
+}
+
+.pomo-mode {
+  padding: 7px 13px;
+  border-radius: 10px;
+  color: var(--muted);
+  background: transparent;
+  font-size: 11.5px;
+  font-weight: 500;
+  transition: color 0.2s, background 0.2s;
+}
+
+.pomo-mode.active {
+  color: #ddd5ff;
+  background: rgba(155,124,255,0.18);
+}
+
+.timer-visual {
+  position: relative;
+  width: 210px;
+  height: 210px;
+  margin: 8px auto 18px;
+  display: grid;
+  place-items: center;
+}
+
+.timer-ring {
+  position: absolute;
+  inset: 0;
+  transform: rotate(-90deg);
+}
+
+.timer-ring circle {
+  fill: none;
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+.timer-ring .track {
+  stroke: rgba(255,255,255,0.06);
+}
+
+.timer-ring .progress {
+  stroke: var(--accent);
+  stroke-dasharray: 628;
+  stroke-dashoffset: 628;
+  transition: stroke-dashoffset 0.35s linear;
+  filter: drop-shadow(0 0 8px var(--accent-glow));
+}
+
+.timer-number {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 58px;
+  letter-spacing: -3.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  z-index: 2;
+}
+
+.session-name-wrap {
+  width: min(320px, 100%);
+  margin: 0 auto 16px;
+}
+
+.session-name-input {
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 12px;
+  color: white;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  outline: none;
+  text-align: center;
+  font-size: 13px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.session-name-input::placeholder {
+  color: rgba(255,255,255,0.35);
+}
+
+.session-name-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(155, 124, 255, 0.12);
+}
+
+.session-name-input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.timer-controls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  align-items: center;
+}
+
+.start-button {
+  min-width: 150px;
+  padding: 14px 26px;
+  border-radius: 15px;
+  color: #09090d;
+  background: white;
+  font-weight: 800;
+  transition: transform 0.2s, box-shadow 0.2s, background 0.2s, color 0.2s;
+  letter-spacing: -0.2px;
+}
+
+.start-button:hover {
+  transform: scale(1.035);
+  box-shadow: 0 16px 42px rgba(255,255,255,0.18);
+}
+
+.start-button.running {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: white;
+  box-shadow: 0 12px 36px rgba(109,74,255,0.35);
+}
+
+.reset-button {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.07);
+  color: rgba(255,255,255,0.72);
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  transition: background 0.2s, color 0.2s, transform 0.2s;
+}
+
+.reset-button:hover {
+  background: rgba(255,255,255,0.12);
+  color: white;
+  transform: rotate(-90deg);
+}
+
+.quote {
+  margin-top: 22px;
+  color: rgba(255,255,255,0.42);
+  font-size: 12.5px;
+  min-height: 18px;
+  transition: opacity 0.4s;
+  letter-spacing: 0.2px;
+}
+
+.session-count {
+  margin-top: 10px;
+  font-size: 11px;
+  color: rgba(180,160,255,0.5);
+  letter-spacing: 0.3px;
+}
+
+/* =========================================================
+   GENERAL PAGES
+========================================================= */
+
+.page-title {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -1.4px;
+}
+
+.page-subtitle {
+  color: var(--muted);
+  font-size: 14px;
+  margin-top: 7px;
+  margin-bottom: 26px;
+}
+
+.panel {
+  padding: 26px;
+  border-radius: 25px;
+  background: rgba(8,8,14,0.62);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(26px);
+  -webkit-backdrop-filter: blur(26px);
+  box-shadow: var(--shadow);
+}
+
+/* =========================================================
+   CALENDAR + EVENTS
+========================================================= */
+
+.calendar-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 16px;
+}
+
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.month-name {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.6px;
+}
+
+.calendar-controls { display: flex; gap: 7px; }
+
+.small-button {
+  padding: 9px 14px;
+  border-radius: 11px;
+  color: rgba(255,255,255,0.72);
+  background: rgba(255,255,255,0.07);
+  border: 1px solid transparent;
+  font-size: 13px;
+  font-weight: 500;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.small-button:hover {
+  border-color: var(--border);
+  color: white;
+  background: rgba(255,255,255,0.1);
+}
+
+.small-button.accent {
+  background: var(--accent);
+  color: #09070f;
+  font-weight: 700;
+  border-color: transparent;
+}
+
+.small-button.accent:hover {
+  background: var(--accent2);
+  color: white;
+}
+
+.calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 7px;
+}
+
+.weekday {
+  padding: 9px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+.calendar-day {
+  min-height: 82px;
+  padding: 10px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.calendar-day:hover {
+  background: rgba(255,255,255,0.07);
+  transform: translateY(-1px);
+}
+
+.calendar-day.today {
+  border-color: rgba(155,124,255,0.55);
+  box-shadow: 0 0 0 1px rgba(155,124,255,0.15);
+}
+
+.calendar-day.selected {
+  background: rgba(155,124,255,0.2);
+  border-color: var(--accent);
+}
+
+.calendar-day.muted { opacity: 0.22; pointer-events: none; }
+
+.day-number { font-size: 12.5px; font-weight: 500; }
+
+.day-dots {
+  display: flex;
+  gap: 3px;
+  margin-top: auto;
+  flex-wrap: wrap;
+  padding-top: 6px;
+}
+
+.day-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0.85;
+}
+
+.day-dot.more {
+  background: rgba(255,255,255,0.35);
+  font-size: 0;
+}
+
+/* Events panel */
+.events-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-height: 620px;
+}
+
+.events-date {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  color: rgba(255,255,255,0.9);
+}
+
+.events-list {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 120px;
+  max-height: 340px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.15) transparent;
+}
+
+.event-item {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  transition: background 0.2s;
+}
+
+.event-item:hover {
+  background: rgba(255,255,255,0.08);
+}
+
+.event-color {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 5px;
+  flex-shrink: 0;
+  background: var(--accent);
+}
+
+.event-body { flex: 1; min-width: 0; }
+
+.event-title {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  word-break: break-word;
+}
+
+.event-time {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+
+.event-delete {
+  opacity: 0.4;
+  font-size: 14px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  transition: opacity 0.2s, background 0.2s;
+  flex-shrink: 0;
+}
+
+.event-delete:hover {
+  opacity: 1;
+  background: rgba(255,80,80,0.2);
+  color: #ff8a8a;
+}
+
+.event-empty {
+  color: var(--muted);
+  font-size: 12.5px;
+  padding: 20px 10px;
+  text-align: center;
+}
+
+.event-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+.event-form input,
+.event-form select {
+  width: 100%;
+  padding: 11px 13px;
+  border-radius: 11px;
+  color: white;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  outline: none;
+  font-size: 13px;
+}
+
+.event-form input:focus,
+.event-form select:focus {
+  border-color: var(--accent);
+}
+
+.event-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+/* =========================================================
+   ANALYTICS
+========================================================= */
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.stat-card {
+  padding: 22px;
+  border-radius: 20px;
+  background: rgba(8,8,14,0.62);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(155,124,255,0.25);
+}
+
+.stat-label {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+
+.stat-value {
+  margin-top: 8px;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -1px;
+  font-variant-numeric: tabular-nums;
+}
+
+.chart {
+  height: 280px;
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  padding: 25px 10px 8px;
+}
+
+.chart-column {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.chart-bar {
+  width: min(48px, 72%);
+  min-height: 5px;
+  border-radius: 10px 10px 5px 5px;
+  background: linear-gradient(to top, var(--accent2), var(--accent));
+  box-shadow: 0 0 28px rgba(155,124,255,0.22);
+  transition: height 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+}
+
+.chart-bar-value {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: rgba(255,255,255,0.55);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.chart-column:hover .chart-bar-value {
+  opacity: 1;
+}
+
+.chart-label {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.analytics-extra {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.analytics-box {
+  padding: 18px 20px;
+  border-radius: 18px;
+  background: rgba(8,8,14,0.5);
+  border: 1px solid var(--border);
+}
+
+.analytics-box h4 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 10px;
+  letter-spacing: 0.2px;
+}
+
+.analytics-box p {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+
+.session-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 14px;
+  border-radius: 13px;
+  background: rgba(255,255,255,0.045);
+  border: 1px solid rgba(255,255,255,0.06);
+  transition: background 0.2s;
+}
+
+.session-row:hover {
+  background: rgba(255,255,255,0.075);
+}
+
+.session-row-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.session-row-title {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+}
+
+.session-row-meta {
+  font-size: 11.5px;
+  color: var(--muted);
+  margin-top: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+}
+
+.session-row-duration {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: #ddd5ff;
+  white-space: nowrap;
+}
+
+.session-row-delete {
+  opacity: 0.4;
+  font-size: 15px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: opacity 0.2s, background 0.2s, color 0.2s;
+  flex-shrink: 0;
+}
+
+.session-row-delete:hover {
+  opacity: 1;
+  background: rgba(255,80,80,0.18);
+  color: #ff8a8a;
+}
+
+/* =========================================================
+   NOTES
+========================================================= */
+
+.notes-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 15px;
+}
+
+.notes-list {
+  max-height: 600px;
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.15) transparent;
+}
+
+.note-item {
+  padding: 14px;
+  border-radius: 14px;
+  cursor: pointer;
+  margin-bottom: 5px;
+  transition: background 0.2s;
+}
+
+.note-item:hover,
+.note-item.active {
+  background: rgba(255,255,255,0.08);
+}
+
+.note-title-small {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+}
+
+.note-date {
+  color: var(--muted);
+  font-size: 10.5px;
+  margin-top: 5px;
+}
+
+.note-input {
+  width: 100%;
+  padding: 14px;
+  border-radius: 13px;
+  color: white;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.note-input:focus { border-color: var(--accent); }
+
+.note-editor {
+  width: 100%;
+  min-height: 430px;
+  resize: vertical;
+  line-height: 1.7;
+  color: white;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.note-editor:focus { border-color: var(--accent); }
+
+.note-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* =========================================================
+   MODALS
+========================================================= */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0,0,0,0.68);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  animation: modalFade 0.25s ease;
+}
+
+.modal.show { display: flex; }
+
+@keyframes modalFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.modal-box {
+  width: min(780px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  padding: 28px;
+  border-radius: 28px;
+  background: rgba(9,9,16,0.96);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow), 0 0 0 1px rgba(155,124,255,0.08);
+  animation: modalSlide 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes modalSlide {
+  from { opacity: 0; transform: translateY(18px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 22px;
+}
+
+.modal-header h2 {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.6px;
+}
+
+/* =========================================================
+   ENVIRONMENTS
+========================================================= */
+
+.environment-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 13px;
+}
+
+.environment {
+  min-height: 160px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background-size: cover;
+  background-position: center;
+  cursor: pointer;
+  transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+}
+
+.environment:hover {
+  transform: translateY(-3px);
+  border-color: rgba(255,255,255,0.35);
+}
+
+.environment.selected {
+  box-shadow: 0 0 0 2px var(--accent), 0 12px 40px rgba(109,74,255,0.25);
+  border-color: var(--accent);
+}
+
+.environment::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(transparent 15%, rgba(0,0,0,0.88));
+}
+
+.environment-name {
+  position: absolute;
+  z-index: 2;
+  left: 16px;
+  bottom: 15px;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: -0.2px;
+}
+
+.env-rain    { background-image: url("https://images.unsplash.com/photo-1519692933481-e162a57d6721?auto=format&fit=crop&w=1200&q=90"); }
+.env-cafe    { background-image: url("https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=1200&q=90"); }
+.env-cottage { background-image: url("https://images.unsplash.com/photo-1449158743715-0a90ebb6d2d8?auto=format&fit=crop&w=1200&q=90"); }
+.env-city    { background-image: url("https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=1200&q=90"); }
+.env-forest  { background-image: url("https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1200&q=90"); }
+.env-ocean   { background-image: url("https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=90"); }
+
+/* =========================================================
+   SETTINGS
+========================================================= */
+
+.settings { display: grid; gap: 15px; }
+
+.setting {
+  padding: 17px;
+  border-radius: 17px;
+  background: rgba(255,255,255,0.035);
+  border: 1px solid var(--border);
+}
+
+.setting-label {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 9px;
+  letter-spacing: -0.1px;
+}
+
+.setting select {
+  width: 100%;
+  padding: 11px;
+  color: white;
+  background: #171620;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  outline: none;
+}
+
+.setting input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+/* =========================================================
+   TOAST + POWER LINE
+========================================================= */
+
+#toast {
+  position: fixed;
+  z-index: 200;
+  left: 50%;
+  bottom: 28px;
+  transform: translate(-50%, 20px);
+  opacity: 0;
+  pointer-events: none;
+  padding: 12px 20px;
+  border-radius: 13px;
+  background: rgba(8,8,14,0.92);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  font-size: 12.5px;
+  font-weight: 500;
+  transition: opacity 0.3s, transform 0.3s;
+  letter-spacing: 0.15px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+}
+
+#toast.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.power-line {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), var(--accent2), transparent);
+  opacity: 0.35;
+  z-index: 40;
+  pointer-events: none;
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1100px) {
+  .calendar-layout {
+    grid-template-columns: 1fr;
+  }
+  .events-panel {
+    max-height: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .notes-layout { grid-template-columns: 1fr; }
+  .analytics-extra { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 800px) {
+  .topbar { left: 14px; right: 14px; }
+  .sidebar {
+    top: auto;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: auto;
+    display: flex;
+    padding: 6px 8px;
+  }
+  .nav-button { margin: 0 2px; }
+  .content { padding: 90px 18px 100px 18px; }
+  .big-clock {
+    font-size: clamp(56px, 16vw, 92px);
+    letter-spacing: -4px;
+  }
+  .timer-box { margin-top: 32px; }
+  .timer-number { font-size: 46px; }
+  .timer-visual { width: 180px; height: 180px; }
+  .calendar { gap: 4px; }
+  .calendar-day { min-height: 62px; padding: 7px; }
+}
+
+@media (max-width: 520px) {
+  .top-logo span { display: none; }
+  .top-actions { gap: 4px; }
+  .icon-button { width: 38px; height: 38px; }
+  .timer-types { flex-wrap: wrap; }
+  .environment-grid { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .stat-value { font-size: 26px; }
+}
+</style>
+</head>
+<body>
+
+<div id="background"></div>
+<div id="noise"></div>
+<div id="rain"></div>
+<div id="particles"></div>
+<div class="power-line"></div>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="logo">
+      <div class="logo-mark">V</div>
+      VEYLO
+    </div>
+
+    <h1 id="authTitle">Welcome back.</h1>
+    <p class="login-sub" id="authSubtitle">Enter your space and start focusing.</p>
+
+    <form id="authForm">
+      <div class="field" id="nameField" style="display:none;">
+        <label>Your name</label>
+        <input id="nameInput" type="text" autocomplete="name">
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input id="emailInput" type="email" required autocomplete="email">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input id="passwordInput" type="password" required autocomplete="current-password">
+      </div>
+      <button class="primary-button" type="submit" id="authButton">Enter Veylo</button>
+    </form>
+
+    <div class="auth-switch">
+      <span id="authSwitch">Create an account</span>
+    </div>
+
+    <div class="immortal-badge">Built to outlast attention itself</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="app">
+    <header class="topbar">
+      <div class="top-logo">
+        <div class="logo-mark">V</div>
+        <span>VEYLO</span>
+      </div>
+      <div class="top-actions">
+        <button class="icon-button" id="soundButton" title="Sound (S)">♪</button>
+        <button class="icon-button" id="environmentButton" title="Environment (E)">◌</button>
+        <button class="icon-button" id="settingsButton" title="Settings">⚙</button>
+        <button class="icon-button" id="fullscreenButton" title="Fullscreen (F)">⛶</button>
+        <button class="icon-button" id="logoutButton" title="Logout">↪</button>
+      </div>
+    </header>
+
+    <aside class="sidebar">
+      <button class="nav-button active" data-page="focus" title="Focus">◉</button>
+      <button class="nav-button" data-page="calendar" title="Calendar">□</button>
+      <button class="nav-button" data-page="analytics" title="Analytics">◒</button>
+      <button class="nav-button" data-page="notes" title="Notes">≡</button>
+    </aside>
+
+    <main class="content">
+      <!-- FOCUS -->
+      <section class="page active" id="page-focus">
+        <div class="focus-page">
+          <div class="greeting" id="greeting">Good evening</div>
+          <div class="big-clock" id="clock">00:00</div>
+          <div class="big-date" id="date">Loading...</div>
+
+          <div class="timer-box">
+            <div class="timer-types">
+              <button class="timer-type active" data-timer="pomodoro">Pomodoro</button>
+              <button class="timer-type" data-timer="countdown">Countdown</button>
+              <button class="timer-type" data-timer="stopwatch">Stopwatch</button>
+            </div>
+
+            <div class="pomo-modes" id="pomoModes">
+              <button class="pomo-mode active" data-mode="focus">Focus</button>
+              <button class="pomo-mode" data-mode="short">Short Break</button>
+              <button class="pomo-mode" data-mode="long">Long Break</button>
+            </div>
+
+            <div class="timer-visual">
+              <svg class="timer-ring" viewBox="0 0 210 210">
+                <circle class="track" cx="105" cy="105" r="100"></circle>
+                <circle class="progress" id="timerProgress" cx="105" cy="105" r="100"></circle>
+              </svg>
+              <div class="timer-number" id="timerNumber">25:00</div>
+            </div>
+
+            <div class="session-name-wrap">
+              <input
+                type="text"
+                id="sessionNameInput"
+                class="session-name-input"
+                placeholder="Name this session (optional)…"
+                maxlength="60"
+                autocomplete="off"
+              >
+            </div>
+
+            <div class="timer-controls">
+              <button class="start-button" id="startButton">Start Focus</button>
+              <button class="reset-button" id="endSessionButton" title="End Session" style="display:none; width:auto; padding:0 16px; font-size:13px; font-weight:600;">End</button>
+              <button class="reset-button" id="resetButton" title="Reset (R)">↻</button>
+            </div>
+
+            <div class="quote" id="quote">One focused session can change the whole day.</div>
+            <div class="session-count" id="sessionCount">0 sessions today</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CALENDAR -->
+      <section class="page" id="page-calendar">
+        <div class="page-title">Calendar</div>
+        <div class="page-subtitle">Organize your days. Add events. Own your time.</div>
+
+        <div class="calendar-layout">
+          <div class="panel">
+            <div class="calendar-header">
+              <div class="month-name" id="monthName">November 2026</div>
+              <div class="calendar-controls">
+                <button class="small-button" id="previousMonth">←</button>
+                <button class="small-button" id="todayButton">Today</button>
+                <button class="small-button" id="nextMonth">→</button>
+              </div>
+            </div>
+            <div class="calendar" id="calendar"></div>
+          </div>
+
+          <div class="panel events-panel">
+            <div class="events-date" id="eventsDate">Select a day</div>
+            <div class="events-list" id="eventsList">
+              <div class="event-empty">Click a day to view & add events</div>
+            </div>
+
+            <div class="event-form" id="eventForm" style="display:none;">
+              <input type="text" id="eventTitle" placeholder="Event title..." maxlength="80">
+              <div class="event-form-row">
+                <input type="time" id="eventTime" value="09:00">
+                <select id="eventColor">
+                  <option value="#9b7cff">Violet</option>
+                  <option value="#60a5fa">Blue</option>
+                  <option value="#34d399">Emerald</option>
+                  <option value="#f59e0b">Amber</option>
+                  <option value="#fb7185">Rose</option>
+                </select>
+              </div>
+              <button class="small-button accent" id="addEventButton" style="width:100%;">Add Event</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ANALYTICS -->
+      <section class="page" id="page-analytics">
+        <div class="page-title">Analytics</div>
+        <div class="page-subtitle">Your focus, measured in real time.</div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Focus minutes</div>
+            <div class="stat-value" id="focusMinutes">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Sessions</div>
+            <div class="stat-value" id="sessions">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Longest session</div>
+            <div class="stat-value" id="bestSession">0m</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Avg session</div>
+            <div class="stat-value" id="avgSession">0m</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3 style="font-size:16px;font-weight:600;margin-bottom:4px;letter-spacing:-0.3px;">Last 7 days</h3>
+          <div class="chart" id="chart"></div>
+        </div>
+
+        <div class="analytics-extra">
+          <div class="analytics-box">
+            <h4>Today</h4>
+            <p id="todayFocus">0 minutes focused</p>
+          </div>
+          <div class="analytics-box">
+            <h4>Average / day (7d)</h4>
+            <p id="avgFocus">0 minutes</p>
+          </div>
+          <div class="analytics-box">
+            <h4>Streak</h4>
+            <p id="streakText">0 days</p>
+          </div>
+          <div class="analytics-box">
+            <h4>Longest session</h4>
+            <p id="longestText">0 minutes</p>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-top:16px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:12px;flex-wrap:wrap;">
+            <h3 style="font-size:16px;font-weight:600;letter-spacing:-0.3px;">Session history</h3>
+            <button class="small-button" id="clearAllSessions" style="font-size:12px;">Clear all</button>
+          </div>
+          <div id="sessionHistory" style="display:flex;flex-direction:column;gap:8px;max-height:420px;overflow:auto;">
+            <div class="event-empty">No sessions yet. Start a focus session to see it here.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- NOTES -->
+      <section class="page" id="page-notes">
+        <div class="page-title">Notes</div>
+        <div class="page-subtitle">Your thoughts, inside your focus space.</div>
+        <div class="notes-layout">
+          <div class="panel">
+            <button class="small-button" id="newNoteButton" style="width:100%;margin-bottom:12px;">+ New Note</button>
+            <div class="notes-list" id="notesList"></div>
+          </div>
+          <div class="panel">
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <input class="note-input" id="noteTitle" placeholder="Note title...">
+              <textarea class="note-editor" id="noteContent" placeholder="Start writing..."></textarea>
+              <div class="note-actions">
+                <button class="small-button" id="deleteNoteButton">Delete</button>
+                <button class="small-button" id="saveNoteButton" style="background:var(--accent);color:#09070f;font-weight:700;">Save</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- ENVIRONMENT MODAL -->
+<div class="modal" id="environmentModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>Choose your atmosphere</h2>
+      <button class="icon-button close-modal">×</button>
+    </div>
+    <div class="environment-grid">
+      <div class="environment env-rain" data-environment="rain">
+        <div class="environment-name">🌧 LoFi Rain</div>
+      </div>
+      <div class="environment env-cafe" data-environment="cafe">
+        <div class="environment-name">☕ Cozy Café</div>
+      </div>
+      <div class="environment env-cottage" data-environment="cottage">
+        <div class="environment-name">🌙 Moonlit Cottage</div>
+      </div>
+      <div class="environment env-city" data-environment="city">
+        <div class="environment-name">🌃 Neon City</div>
+      </div>
+      <div class="environment env-forest" data-environment="forest">
+        <div class="environment-name">🌲 Deep Forest</div>
+      </div>
+      <div class="environment env-ocean" data-environment="ocean">
+        <div class="environment-name">🌊 Ocean</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal" id="settingsModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>Veylo Settings</h2>
+      <button class="icon-button close-modal">×</button>
+    </div>
+    <div class="settings">
+      <div class="setting">
+        <div class="setting-label">Font</div>
+        <select id="fontSelect">
+          <option value="Inter,sans-serif">Inter</option>
+          <option value="'Space Grotesk',sans-serif">Space Grotesk</option>
+          <option value="Georgia,serif">Georgia</option>
+          <option value="monospace">Monospace</option>
+        </select>
+      </div>
+      <div class="setting">
+        <div class="setting-label">Accent</div>
+        <select id="accentSelect">
+          <option value="#9b7cff">Violet</option>
+          <option value="#60a5fa">Blue</option>
+          <option value="#34d399">Emerald</option>
+          <option value="#f59e0b">Amber</option>
+          <option value="#fb7185">Rose</option>
+        </select>
+      </div>
+      <div class="setting">
+        <div class="setting-label">Rain intensity</div>
+        <input type="range" id="rainRange" min="0" max="100" value="42">
+      </div>
+      <div class="setting">
+        <div class="setting-label">Custom backdrop</div>
+        <input type="file" id="customBackground" accept="image/*">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const $ = s => document.querySelector(s);
+  const $$ = s => Array.from(document.querySelectorAll(s));
+
+  function save(key, value) {
+    localStorage.setItem(key, JSON.stringify(value));
+  }
+  function load(key, fallback) {
+    try {
+      const v = localStorage.getItem(key);
+      return v ? JSON.parse(v) : fallback;
+    } catch {
+      return fallback;
+    }
+  }
+
+  /* Toast */
+  let toastTimer;
+  function toast(message) {
+    const el = $("#toast");
+    el.textContent = message;
+    el.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove("show"), 2300);
+  }
+
+  /* Date helpers */
+  function dateKey(d) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  }
+
+  function formatDisplayDate(d) {
+    return d.toLocaleDateString([], {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+      year: "numeric"
+    });
+  }
+
+  /* Backgrounds */
+  const backgrounds = {
+    rain: "https://images.unsplash.com/photo-1519692933481-e162a57d6721?auto=format&fit=crop&w=2400&q=90",
+    cafe: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=2400&q=90",
+    cottage: "https://images.unsplash.com/photo-1449158743715-0a90ebb6d2d8?auto=format&fit=crop&w=2400&q=90",
+    city: "https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=2400&q=90",
+    forest: "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=2400&q=90",
+    ocean: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2400&q=90"
+  };
+
+  function setEnvironment(env) {
+    if (!backgrounds[env]) env = "rain";
+    $("#background").style.backgroundImage = `url("${backgrounds[env]}")`;
+    $$(".environment").forEach(item => {
+      item.classList.toggle("selected", item.dataset.environment === env);
+    });
+    save("veylo_environment", env);
+  }
+
+  let currentEnvironment = load("veylo_environment", "rain");
+  setEnvironment(currentEnvironment);
+
+  /* Rain */
+  const rainContainer = $("#rain");
+  for (let i = 0; i < 140; i++) {
+    const drop = document.createElement("div");
+    drop.className = "rain-drop";
+    drop.style.left = Math.random() * 100 + "%";
+    drop.style.animationDuration = (0.45 + Math.random() * 0.85) + "s";
+    drop.style.animationDelay = Math.random() * 2.5 + "s";
+    drop.style.opacity = 0.18 + Math.random() * 0.65;
+    drop.style.height = (55 + Math.random() * 40) + "px";
+    rainContainer.appendChild(drop);
+  }
+
+  /* Particles */
+  const particleContainer = $("#particles");
+  for (let i = 0; i < 28; i++) {
+    const p = document.createElement("div");
+    p.className = "particle";
+    const size = 1.5 + Math.random() * 3.5;
+    p.style.width = size + "px";
+    p.style.height = size + "px";
+    p.style.left = Math.random() * 100 + "%";
+    p.style.bottom = (-10 - Math.random() * 20) + "%";
+    p.style.animationDuration = (12 + Math.random() * 22) + "s";
+    p.style.animationDelay = Math.random() * 18 + "s";
+    particleContainer.appendChild(p);
+  }
+
+  /* Auth */
+  let authMode = "login";
+
+  function updateAuth() {
+    const signup = authMode === "signup";
+    $("#authTitle").textContent = signup ? "Create your space." : "Welcome back.";
+    $("#authSubtitle").textContent = signup
+      ? "Build your personal focus environment."
+      : "Enter your space and start focusing.";
+    $("#nameField").style.display = signup ? "block" : "none";
+    $("#nameInput").required = signup;
+    $("#authButton").textContent = signup ? "Create Veylo" : "Enter Veylo";
+    $("#authSwitch").textContent = signup ? "Already have an account" : "Create an account";
+  }
+
+  $("#authSwitch").addEventListener("click", () => {
+    authMode = authMode === "login" ? "signup" : "login";
+    updateAuth();
+  });
+
+  $("#authForm").addEventListener("submit", e => {
+    e.preventDefault();
+    const email = $("#emailInput").value.trim();
+    const password = $("#passwordInput").value;
+    if (!email || !password) {
+      toast("Fill in all fields.");
+      return;
+    }
+
+    if (authMode === "signup") {
+      const name = $("#nameInput").value.trim();
+      if (!name) {
+        toast("Enter your name.");
+        return;
+      }
+      save("veylo_account", { name, email, password });
+      save("veylo_logged_in", true);
+      showApp();
+      toast("Welcome to Veylo.");
+    } else {
+      const account = load("veylo_account", null);
+      if (account && account.email === email && account.password === password) {
+        save("veylo_logged_in", true);
+        showApp();
+      } else {
+        toast("Incorrect login details.");
+      }
+    }
+  });
+
+  function showApp() {
+    $("#loginScreen").style.display = "none";
+    $("#app").style.display = "block";
+    updateGreeting();
+  }
+
+  function showLogin() {
+    $("#app").style.display = "none";
+    $("#loginScreen").style.display = "flex";
+  }
+
+  if (load("veylo_logged_in", false)) showApp();
+
+  $("#logoutButton").addEventListener("click", () => {
+    localStorage.removeItem("veylo_logged_in");
+    showLogin();
+    toast("Logged out.");
+  });
+
+  /* Clock */
+  function updateClock() {
+    const now = new Date();
+    $("#clock").textContent = now.toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit"
+    });
+    $("#date").textContent = now.toLocaleDateString([], {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+      year: "numeric"
+    });
+    updateGreeting();
+  }
+
+  function updateGreeting() {
+    const hour = new Date().getHours();
+    let text = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+    const account = load("veylo_account", null);
+    if (account && account.name) text += ", " + account.name.split(" ")[0];
+    $("#greeting").textContent = text;
+  }
+
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  /* ========== STATISTICS + SESSION HISTORY ========== */
+  let statistics = load("veylo_statistics", {
+    minutes: 0,
+    sessions: 0,
+    streak: 0,
+    best: 0,
+    todaySessions: 0,
+    lastDate: null,
+    history: {},
+    sessionLog: [] // [{ id, start, end, durationMin, type, mode }]
+  });
+
+  if (!statistics.history) statistics.history = {};
+  if (!statistics.sessionLog) statistics.sessionLog = [];
+
+  const todayStr = dateKey(new Date());
+  if (statistics.lastDate !== todayStr) {
+    statistics.todaySessions = 0;
+    statistics.lastDate = todayStr;
+    save("veylo_statistics", statistics);
+  }
+
+  let activeSessionStart = null; // timestamp when current focus session started
+  let activeSessionName = "";
+
+  function recalculateFromLog() {
+    const log = statistics.sessionLog || [];
+    const history = {};
+    let totalMins = 0;
+    let best = 0;
+    let todayCount = 0;
+    const today = dateKey(new Date());
+
+    log.forEach(s => {
+      const mins = s.durationMin || 0;
+      totalMins += mins;
+      best = Math.max(best, mins);
+      const key = dateKey(new Date(s.end || s.start));
+      history[key] = (history[key] || 0) + mins;
+      if (key === today) todayCount++;
+    });
+
+    // streak
+    let streak = 0;
+    let d = new Date();
+    while (true) {
+      const k = dateKey(d);
+      if ((history[k] || 0) > 0) {
+        streak++;
+        d.setDate(d.getDate() - 1);
+      } else break;
+    }
+
+    statistics.history = history;
+    statistics.minutes = totalMins;
+    statistics.sessions = log.length;
+    statistics.best = best;
+    statistics.todaySessions = todayCount;
+    statistics.streak = streak;
+    statistics.lastDate = today;
+    save("veylo_statistics", statistics);
+  }
+
+  function logSession(startTs, endTs, type, mode, name) {
+    const durationMs = Math.max(0, endTs - startTs);
+    const durationMin = Math.round((durationMs / 60000) * 10) / 10; // 1 decimal
+    if (durationMin < 0.1) return; // ignore tiny sessions
+
+    const entry = {
+      id: Date.now() + Math.random(),
+      start: startTs,
+      end: endTs,
+      durationMin,
+      type: type || "pomodoro",
+      mode: mode || "focus",
+      name: (name || "").trim()
+    };
+
+    if (!statistics.sessionLog) statistics.sessionLog = [];
+    statistics.sessionLog.unshift(entry);
+    // keep last 200
+    if (statistics.sessionLog.length > 200) {
+      statistics.sessionLog = statistics.sessionLog.slice(0, 200);
+    }
+    recalculateFromLog();
+  }
+
+  function formatSessionTime(ts) {
+    return new Date(ts).toLocaleString([], {
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit"
+    });
+  }
+
+  function formatDuration(mins) {
+    if (mins < 1) return Math.round(mins * 60) + "s";
+    if (mins < 60) return mins.toFixed(mins % 1 === 0 ? 0 : 1) + "m";
+    const h = Math.floor(mins / 60);
+    const m = Math.round(mins % 60);
+    return h + "h " + m + "m";
+  }
+
+  /* ========== TIMER ========== */
+  let timerType = "pomodoro";
+  let pomodoroMode = "focus";
+  const pomodoroTimes = { focus: 25 * 60, short: 5 * 60, long: 15 * 60 };
+  let timerSeconds = pomodoroTimes.focus;
+  let totalSeconds = pomodoroTimes.focus;
+  let stopwatchSeconds = 0;
+  let running = false;
+  let timerInterval = null;
+
+  const CIRCUMFERENCE = 2 * Math.PI * 100;
+
+  function formatTime(seconds) {
+    seconds = Math.max(0, Math.floor(seconds));
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
+  }
+
+  function updateProgress() {
+    const ring = $("#timerProgress");
+    if (!ring) return;
+    if (timerType === "stopwatch") {
+      ring.style.strokeDashoffset = CIRCUMFERENCE;
+      return;
+    }
+    const progress = totalSeconds > 0 ? timerSeconds / totalSeconds : 0;
+    ring.style.strokeDashoffset = CIRCUMFERENCE * (1 - progress);
+  }
+
+  function renderTimer() {
+    if (timerType === "stopwatch") {
+      $("#timerNumber").textContent = formatTime(stopwatchSeconds);
+    } else {
+      $("#timerNumber").textContent = formatTime(timerSeconds);
+    }
+    updateProgress();
+
+    const btn = $("#startButton");
+    const endBtn = $("#endSessionButton");
+    const nameInput = $("#sessionNameInput");
+    if (running) {
+      btn.textContent = "Pause";
+      btn.classList.add("running");
+      endBtn.style.display = "grid";
+      if (nameInput) nameInput.disabled = true;
+    } else {
+      btn.classList.remove("running");
+      endBtn.style.display = "none";
+      if (nameInput && !activeSessionStart) nameInput.disabled = false;
+      if (timerType === "pomodoro") {
+        btn.textContent = pomodoroMode === "focus" ? "Start Focus" : "Start Break";
+      } else {
+        btn.textContent = "Start";
+      }
+    }
+
+    $("#sessionCount").textContent =
+      (statistics.todaySessions || 0) + " session" + (statistics.todaySessions === 1 ? "" : "s") + " today";
+  }
+
+  function stopTimer() {
+    running = false;
+    clearInterval(timerInterval);
+    timerInterval = null;
+    renderTimer();
+  }
+
+  function finishActiveSession(natural) {
+    if (!activeSessionStart) return;
+    const end = Date.now();
+    const mode = timerType === "pomodoro" ? pomodoroMode : timerType;
+    logSession(activeSessionStart, end, timerType, mode, activeSessionName);
+    activeSessionStart = null;
+    activeSessionName = "";
+    const nameInput = $("#sessionNameInput");
+    if (nameInput) {
+      nameInput.value = "";
+      nameInput.disabled = false;
+    }
+    updateAnalytics();
+    if (natural) {
+      toast("Focus session complete.");
+    } else {
+      toast("Session ended & logged.");
+    }
+  }
+
+
+  function completeTimer() {
+    stopTimer();
+    if (timerType === "pomodoro" && pomodoroMode === "focus") {
+      finishActiveSession(true);
+      pomodoroMode = "short";
+      timerSeconds = pomodoroTimes.short;
+      totalSeconds = pomodoroTimes.short;
+      $$(".pomo-mode").forEach(b => {
+        b.classList.toggle("active", b.dataset.mode === "short");
+      });
+    } else if (timerType === "pomodoro") {
+      toast("Timer complete.");
+      timerSeconds = pomodoroTimes[pomodoroMode];
+      totalSeconds = timerSeconds;
+      activeSessionStart = null;
+    } else if (timerType === "countdown") {
+      // log countdown if it was a focus-like session
+      if (activeSessionStart) finishActiveSession(true);
+      else toast("Timer complete.");
+    } else {
+      toast("Timer complete.");
+      activeSessionStart = null;
+    }
+    renderTimer();
+  }
+
+  function tick() {
+    if (timerType === "stopwatch") {
+      stopwatchSeconds++;
+    } else {
+      timerSeconds--;
+      if (timerSeconds <= 0) {
+        timerSeconds = 0;
+        completeTimer();
+        return;
+      }
+    }
+    renderTimer();
+  }
+
+  $("#startButton").addEventListener("click", () => {
+    if (running) {
+      stopTimer();
+      return;
+    }
+    // capture name at the moment the session begins
+    const nameInput = $("#sessionNameInput");
+    if (!activeSessionStart) {
+      activeSessionName = nameInput ? nameInput.value.trim() : "";
+    }
+    // start tracking only for focus-type sessions
+    if (timerType === "pomodoro" && pomodoroMode === "focus") {
+      if (!activeSessionStart) activeSessionStart = Date.now();
+    } else if (timerType === "countdown" || timerType === "stopwatch") {
+      if (!activeSessionStart) activeSessionStart = Date.now();
+    } else {
+      activeSessionStart = null; // breaks don't count as focus sessions
+      activeSessionName = "";
+    }
+    running = true;
+    timerInterval = setInterval(tick, 1000);
+    renderTimer();
+  });
+
+  $("#endSessionButton").addEventListener("click", () => {
+    if (!running && !activeSessionStart) return;
+    stopTimer();
+    if (activeSessionStart) {
+      finishActiveSession(false);
+    }
+    // reset timer display to original
+    if (timerType === "stopwatch") {
+      stopwatchSeconds = 0;
+    } else if (timerType === "pomodoro") {
+      timerSeconds = pomodoroTimes[pomodoroMode];
+      totalSeconds = timerSeconds;
+    } else {
+      timerSeconds = 5 * 60;
+      totalSeconds = timerSeconds;
+    }
+    renderTimer();
+  });
+
+  $("#resetButton").addEventListener("click", () => {
+    stopTimer();
+    activeSessionStart = null; // discard without logging
+    activeSessionName = "";
+    const nameInput = $("#sessionNameInput");
+    if (nameInput) {
+      nameInput.value = "";
+      nameInput.disabled = false;
+    }
+    if (timerType === "stopwatch") {
+      stopwatchSeconds = 0;
+    } else {
+      timerSeconds = timerType === "pomodoro" ? pomodoroTimes[pomodoroMode] : 5 * 60;
+      totalSeconds = timerSeconds;
+    }
+    renderTimer();
+  });
+
+  $$(".timer-type").forEach(button => {
+    button.addEventListener("click", () => {
+      stopTimer();
+      activeSessionStart = null;
+      activeSessionName = "";
+      const nameInput = $("#sessionNameInput");
+      if (nameInput) nameInput.disabled = false;
+      timerType = button.dataset.timer;
+      $$(".timer-type").forEach(i => i.classList.remove("active"));
+      button.classList.add("active");
+
+      if (timerType === "pomodoro") {
+        $("#pomoModes").style.display = "flex";
+        timerSeconds = pomodoroTimes[pomodoroMode];
+        totalSeconds = timerSeconds;
+      } else {
+        $("#pomoModes").style.display = "none";
+        if (timerType === "stopwatch") {
+          stopwatchSeconds = 0;
+        } else {
+          timerSeconds = 5 * 60;
+          totalSeconds = timerSeconds;
+        }
+      }
+      renderTimer();
+    });
+  });
+
+  $$(".pomo-mode").forEach(button => {
+    button.addEventListener("click", () => {
+      stopTimer();
+      activeSessionStart = null;
+      activeSessionName = "";
+      const nameInput = $("#sessionNameInput");
+      if (nameInput) nameInput.disabled = false;
+      pomodoroMode = button.dataset.mode;
+      timerSeconds = pomodoroTimes[pomodoroMode];
+      totalSeconds = timerSeconds;
+      $$(".pomo-mode").forEach(i => i.classList.remove("active"));
+      button.classList.add("active");
+      renderTimer();
+    });
+  });
+
+  /* ========== NAVIGATION ========== */
+  $$(".nav-button").forEach(button => {
+    button.addEventListener("click", () => {
+      const page = button.dataset.page;
+      $$(".nav-button").forEach(i => i.classList.remove("active"));
+      button.classList.add("active");
+      $$(".page").forEach(i => i.classList.remove("active"));
+      $("#page-" + page).classList.add("active");
+      if (page === "calendar") {
+        renderCalendar();
+        renderEvents();
+      }
+      if (page === "analytics") updateAnalytics();
+      if (page === "notes") renderNotes();
+    });
+  });
+
+  /* ========== CALENDAR + EVENTS ========== */
+  let calendarDate = new Date();
+  let selectedDate = new Date();
+  let events = load("veylo_events", {}); // { "YYYY-MM-DD": [ {id, title, time, color} ] }
+
+  function getEventsFor(date) {
+    const key = dateKey(date);
+    return events[key] || [];
+  }
+
+  function saveEvents() {
+    save("veylo_events", events);
+  }
+
+  function renderCalendar() {
+    const year = calendarDate.getFullYear();
+    const month = calendarDate.getMonth();
+    $("#monthName").textContent = new Date(year, month, 1).toLocaleDateString([], {
+      month: "long",
+      year: "numeric"
+    });
+
+    const calendar = $("#calendar");
+    calendar.innerHTML = "";
+
+    ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].forEach(day => {
+      const el = document.createElement("div");
+      el.className = "weekday";
+      el.textContent = day;
+      calendar.appendChild(el);
+    });
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const days = new Date(year, month + 1, 0).getDate();
+    const previousDays = new Date(year, month, 0).getDate();
+
+    for (let i = 0; i < firstDay; i++) {
+      const el = document.createElement("div");
+      el.className = "calendar-day muted";
+      el.innerHTML = `<div class="day-number">${previousDays - firstDay + i + 1}</div>`;
+      calendar.appendChild(el);
+    }
+
+    for (let day = 1; day <= days; day++) {
+      const el = document.createElement("div");
+      el.className = "calendar-day";
+      const date = new Date(year, month, day);
+      const today = new Date();
+      if (date.toDateString() === today.toDateString()) el.classList.add("today");
+      if (date.toDateString() === selectedDate.toDateString()) el.classList.add("selected");
+
+      const dayEvents = getEventsFor(date);
+      let dotsHTML = "";
+      if (dayEvents.length > 0) {
+        const show = dayEvents.slice(0, 3);
+        dotsHTML = `<div class="day-dots">${show.map(e =>
+          `<div class="day-dot" style="background:${e.color || "var(--accent)"}"></div>`
+        ).join("")}${dayEvents.length > 3 ? '<div class="day-dot more"></div>' : ""}</div>`;
+      }
+
+      el.innerHTML = `<div class="day-number">${day}</div>${dotsHTML}`;
+
+      el.addEventListener("click", () => {
+        selectedDate = date;
+        renderCalendar();
+        renderEvents();
+      });
+      calendar.appendChild(el);
+    }
+  }
+
+  function renderEvents() {
+    const list = $("#eventsList");
+    const form = $("#eventForm");
+    const dateLabel = $("#eventsDate");
+
+    dateLabel.textContent = formatDisplayDate(selectedDate);
+    form.style.display = "flex";
+
+    const dayEvents = getEventsFor(selectedDate);
+
+    if (dayEvents.length === 0) {
+      list.innerHTML = `<div class="event-empty">No events yet. Add one below.</div>`;
+    } else {
+      // sort by time
+      const sorted = [...dayEvents].sort((a, b) => (a.time || "").localeCompare(b.time || ""));
+      list.innerHTML = sorted.map(ev => `
+        <div class="event-item" data-id="${ev.id}">
+          <div class="event-color" style="background:${ev.color || "var(--accent)"}"></div>
+          <div class="event-body">
+            <div class="event-title">${escapeHTML(ev.title)}</div>
+            <div class="event-time">${ev.time || "—"}</div>
+          </div>
+          <button class="event-delete" data-id="${ev.id}" title="Delete">×</button>
+        </div>
+      `).join("");
+
+      list.querySelectorAll(".event-delete").forEach(btn => {
+        btn.addEventListener("click", e => {
+          e.stopPropagation();
+          const id = Number(btn.dataset.id);
+          const key = dateKey(selectedDate);
+          events[key] = (events[key] || []).filter(x => x.id !== id);
+          if (events[key].length === 0) delete events[key];
+          saveEvents();
+          renderEvents();
+          renderCalendar();
+          toast("Event removed.");
+        });
+      });
+    }
+  }
+
+  $("#addEventButton").addEventListener("click", () => {
+    const title = $("#eventTitle").value.trim();
+    if (!title) {
+      toast("Enter an event title.");
+      return;
+    }
+    const time = $("#eventTime").value || "09:00";
+    const color = $("#eventColor").value;
+
+    const key = dateKey(selectedDate);
+    if (!events[key]) events[key] = [];
+
+    events[key].push({
+      id: Date.now(),
+      title,
+      time,
+      color
+    });
+
+    saveEvents();
+    $("#eventTitle").value = "";
+    renderEvents();
+    renderCalendar();
+    toast("Event added.");
+  });
+
+  $("#previousMonth").addEventListener("click", () => {
+    calendarDate.setMonth(calendarDate.getMonth() - 1);
+    renderCalendar();
+  });
+  $("#nextMonth").addEventListener("click", () => {
+    calendarDate.setMonth(calendarDate.getMonth() + 1);
+    renderCalendar();
+  });
+  $("#todayButton").addEventListener("click", () => {
+    calendarDate = new Date();
+    selectedDate = new Date();
+    renderCalendar();
+    renderEvents();
+  });
+
+  /* ========== ANALYTICS ========== */
+  function updateAnalytics() {
+    statistics = load("veylo_statistics", statistics);
+    if (!statistics.history) statistics.history = {};
+    if (!statistics.sessionLog) statistics.sessionLog = [];
+
+    const totalMins = statistics.minutes || 0;
+    const sessionCount = statistics.sessions || 0;
+    const longest = statistics.best || 0;
+    const avgSession = sessionCount > 0 ? totalMins / sessionCount : 0;
+
+    $("#focusMinutes").textContent = Math.round(totalMins);
+    $("#sessions").textContent = sessionCount;
+    $("#bestSession").textContent = formatDuration(longest);
+    $("#avgSession").textContent = formatDuration(avgSession);
+
+    // last 7 days chart
+    const chart = $("#chart");
+    chart.innerHTML = "";
+    const values = [];
+    const labels = [];
+    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const key = dateKey(d);
+      const mins = statistics.history[key] || 0;
+      values.push(mins);
+      labels.push(dayNames[d.getDay()]);
+    }
+
+    const maximum = Math.max(...values, 1);
+    const todayMins = values[6] || 0;
+    const avgDay = values.reduce((a, b) => a + b, 0) / 7;
+
+    $("#todayFocus").textContent = Math.round(todayMins) + " minutes focused";
+    $("#avgFocus").textContent = Math.round(avgDay) + " minutes";
+    $("#streakText").textContent = (statistics.streak || 0) + " day" + ((statistics.streak || 0) === 1 ? "" : "s");
+    $("#longestText").textContent = formatDuration(longest);
+
+    values.forEach((value, index) => {
+      const column = document.createElement("div");
+      column.className = "chart-column";
+      const bar = document.createElement("div");
+      bar.className = "chart-bar";
+      const h = Math.max(5, (value / maximum) * 180);
+      bar.style.height = h + "px";
+      if (value > 0) {
+        const val = document.createElement("div");
+        val.className = "chart-bar-value";
+        val.textContent = Math.round(value) + "m";
+        bar.appendChild(val);
+      }
+      const label = document.createElement("div");
+      label.className = "chart-label";
+      label.textContent = labels[index];
+      column.appendChild(bar);
+      column.appendChild(label);
+      chart.appendChild(column);
+    });
+
+    // Session history list
+    const hist = $("#sessionHistory");
+    const log = statistics.sessionLog || [];
+    if (log.length === 0) {
+      hist.innerHTML = `<div class="event-empty">No sessions yet. Start a focus session to see it here.</div>`;
+    } else {
+      hist.innerHTML = log.map(s => {
+        const typeLabel = s.type === "pomodoro"
+          ? (s.mode === "focus" ? "Pomodoro Focus" : (s.mode === "short" ? "Short Break" : "Long Break"))
+          : (s.type === "stopwatch" ? "Stopwatch" : "Countdown");
+        const title = s.name ? s.name : typeLabel;
+        const sub = s.name ? typeLabel : null;
+        return `
+          <div class="session-row" data-id="${s.id}">
+            <div class="session-row-main">
+              <div class="session-row-title">${escapeHTML(title)}</div>
+              <div class="session-row-meta">
+                ${sub ? `<span>${escapeHTML(sub)}</span>` : ""}
+                <span>Started ${formatSessionTime(s.start)}</span>
+                <span>Ended ${formatSessionTime(s.end)}</span>
+              </div>
+            </div>
+            <div class="session-row-duration">${formatDuration(s.durationMin)}</div>
+            <button class="session-row-delete" data-id="${s.id}" title="Delete session">×</button>
+          </div>
+        `;
+      }).join("");
+
+      hist.querySelectorAll(".session-row-delete").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = btn.dataset.id;
+          statistics.sessionLog = (statistics.sessionLog || []).filter(x => String(x.id) !== String(id));
+          recalculateFromLog();
+          updateAnalytics();
+          renderTimer();
+          toast("Session deleted.");
+        });
+      });
+    }
+  }
+
+  $("#clearAllSessions").addEventListener("click", () => {
+    if (!(statistics.sessionLog || []).length) {
+      toast("Nothing to clear.");
+      return;
+    }
+    if (!confirm("Delete all session history? This cannot be undone.")) return;
+    statistics.sessionLog = [];
+    recalculateFromLog();
+    updateAnalytics();
+    renderTimer();
+    toast("All sessions cleared.");
+  });
+
+  /* ========== NOTES ========== */
+  let notes = load("veylo_notes", []);
+  let currentNote = null;
+
+  function escapeHTML(text) {
+    return String(text)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function renderNotes() {
+    const list = $("#notesList");
+    list.innerHTML = "";
+    if (notes.length === 0) {
+      list.innerHTML = `<div style="color:var(--muted);font-size:12px;padding:15px;">No notes yet.</div>`;
+      return;
+    }
+    notes.forEach(note => {
+      const item = document.createElement("div");
+      item.className = "note-item";
+      if (note.id === currentNote) item.classList.add("active");
+      item.innerHTML = `
+        <div class="note-title-small">${escapeHTML(note.title || "Untitled")}</div>
+        <div class="note-date">${new Date(note.updated).toLocaleDateString()}</div>
+      `;
+      item.addEventListener("click", () => {
+        currentNote = note.id;
+        $("#noteTitle").value = note.title;
+        $("#noteContent").value = note.content;
+        renderNotes();
+      });
+      list.appendChild(item);
+    });
+  }
+
+  $("#newNoteButton").addEventListener("click", () => {
+    const note = {
+      id: Date.now(),
+      title: "New Note",
+      content: "",
+      updated: new Date().toISOString()
+    };
+    notes.unshift(note);
+    currentNote = note.id;
+    save("veylo_notes", notes);
+    $("#noteTitle").value = note.title;
+    $("#noteContent").value = "";
+    renderNotes();
+    toast("New note created.");
+  });
+
+  $("#saveNoteButton").addEventListener("click", () => {
+    if (!currentNote) {
+      toast("Create a note first.");
+      return;
+    }
+    const note = notes.find(n => n.id === currentNote);
+    if (!note) return;
+    note.title = $("#noteTitle").value.trim() || "Untitled";
+    note.content = $("#noteContent").value;
+    note.updated = new Date().toISOString();
+    save("veylo_notes", notes);
+    renderNotes();
+    toast("Note saved.");
+  });
+
+  $("#deleteNoteButton").addEventListener("click", () => {
+    if (!currentNote) {
+      toast("No note selected.");
+      return;
+    }
+    notes = notes.filter(n => n.id !== currentNote);
+    currentNote = null;
+    $("#noteTitle").value = "";
+    $("#noteContent").value = "";
+    save("veylo_notes", notes);
+    renderNotes();
+    toast("Note deleted.");
+  });
+
+  /* Environment modal */
+  $("#environmentButton").addEventListener("click", () => {
+    $("#environmentModal").classList.add("show");
+  });
+
+  $$(".environment").forEach(env => {
+    env.addEventListener("click", () => {
+      currentEnvironment = env.dataset.environment;
+      setEnvironment(currentEnvironment);
+      $("#environmentModal").classList.remove("show");
+      toast("Atmosphere changed.");
+    });
+  });
+
+  /* Settings */
+  $("#settingsButton").addEventListener("click", () => {
+    $("#settingsModal").classList.add("show");
+  });
+
+  $$(".close-modal").forEach(btn => {
+    btn.addEventListener("click", () => {
+      $$(".modal").forEach(m => m.classList.remove("show"));
+    });
+  });
+
+  $$(".modal").forEach(modal => {
+    modal.addEventListener("click", e => {
+      if (e.target === modal) modal.classList.remove("show");
+    });
+  });
+
+  /* Font */
+  const savedFont = load("veylo_font", "Inter,sans-serif");
+  document.documentElement.style.setProperty("--font", savedFont);
+  $("#fontSelect").value = savedFont;
+  $("#fontSelect").addEventListener("change", e => {
+    const font = e.target.value;
+    document.documentElement.style.setProperty("--font", font);
+    save("veylo_font", font);
+    toast("Font changed.");
+  });
+
+  /* Accent */
+  const savedAccent = load("veylo_accent", "#9b7cff");
+  document.documentElement.style.setProperty("--accent", savedAccent);
+  $("#accentSelect").value = savedAccent;
+  $("#accentSelect").addEventListener("change", e => {
+    const accent = e.target.value;
+    document.documentElement.style.setProperty("--accent", accent);
+    save("veylo_accent", accent);
+    toast("Accent changed.");
+  });
+
+  /* Custom background */
+  $("#customBackground").addEventListener("change", e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast("Please select an image.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const image = reader.result;
+      $("#background").style.backgroundImage = `url("${image}")`;
+      save("veylo_custom_background", image);
+      toast("Custom backdrop applied.");
+    };
+    reader.readAsDataURL(file);
+  });
+
+  const savedCustom = load("veylo_custom_background", null);
+  if (savedCustom) {
+    $("#background").style.backgroundImage = `url("${savedCustom}")`;
+  }
+
+  /* Rain intensity */
+  const savedRain = load("veylo_rain", 42);
+  $("#rain").style.opacity = savedRain / 100;
+  $("#rainRange").value = savedRain;
+  $("#rainRange").addEventListener("input", e => {
+    const value = Number(e.target.value);
+    $("#rain").style.opacity = value / 100;
+    save("veylo_rain", value);
+  });
+
+  /* Sound toggle */
+  let soundEnabled = load("veylo_sound", true);
+  function updateSoundIcon() {
+    const btn = $("#soundButton");
+    btn.textContent = soundEnabled ? "♪" : "×";
+    btn.classList.toggle("active-sound", soundEnabled);
+  }
+  updateSoundIcon();
+  $("#soundButton").addEventListener("click", () => {
+    soundEnabled = !soundEnabled;
+    save("veylo_sound", soundEnabled);
+    updateSoundIcon();
+    toast(soundEnabled ? "Sound enabled." : "Sound muted.");
+  });
+
+  /* Fullscreen */
+  $("#fullscreenButton").addEventListener("click", async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch {
+      toast("Fullscreen unavailable.");
+    }
+  });
+
+  /* Keyboard */
+  document.addEventListener("keydown", e => {
+    if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" || e.target.tagName === "SELECT") return;
+    if (e.code === "Space") {
+      e.preventDefault();
+      $("#startButton").click();
+    }
+    if (e.key.toLowerCase() === "r") $("#resetButton").click();
+    if (e.key.toLowerCase() === "e") $("#environmentButton").click();
+    if (e.key.toLowerCase() === "f") $("#fullscreenButton").click();
+    if (e.key.toLowerCase() === "s") $("#soundButton").click();
+  });
+
+  /* Quotes */
+  const quotes = [
+    "One focused session can change the whole day.",
+    "Protect your attention.",
+    "Deep work. Quiet mind.",
+    "Small progress is still progress.",
+    "Stay here. Do the thing.",
+    "Focus is a superpower.",
+    "Your future self will thank you.",
+    "Do less. Focus harder.",
+    "The only time that matters is now.",
+    "Immortal output begins with mortal discipline."
+  ];
+  let quoteIndex = 0;
+  setInterval(() => {
+    quoteIndex = (quoteIndex + 1) % quotes.length;
+    const q = $("#quote");
+    q.style.opacity = "0";
+    setTimeout(() => {
+      q.textContent = quotes[quoteIndex];
+      q.style.opacity = "1";
+    }, 280);
+  }, 11000);
+
+  /* Init */
+  recalculateFromLog();
+  renderTimer();
+  renderCalendar();
+  renderEvents();
+  renderNotes();
+  updateAnalytics();
+});
+</script>
+</body>
+</html>
